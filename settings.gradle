@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name='ACCDAT(PSP)_301119_ChaterBot'
