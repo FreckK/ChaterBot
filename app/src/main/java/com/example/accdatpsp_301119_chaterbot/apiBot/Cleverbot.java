@@ -1,4 +1,4 @@
-package com.example.accdatpsp_301119_chaterbot.api;
+package com.example.accdatpsp_301119_chaterbot.apiBot;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;

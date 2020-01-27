@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "832561203917",
+    "firebase_url": "https://chater-bot.firebaseio.com",
+    "project_id": "chater-bot",
+    "storage_bucket": "chater-bot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:832561203917:android:54877153797f0577017784",
+        "android_client_info": {
+          "package_name": "com.example.accdatpsp_301119_chaterbot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "832561203917-b1prho5qfn7divtu4mkiv0ml1nlfop1v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.accdatpsp_301119_chaterbot",
+            "certificate_hash": "4e3d3883f98c7c6a08ad7d6622e9aef1a65bc864"
+          }
+        },
+        {
+          "client_id": "832561203917-e5nh5kdjf15vnkutdqtm9ubvfe4phnfa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0WBMwEfv55frIwE-cEYi5zWfzwpI-Y6o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "832561203917-e5nh5kdjf15vnkutdqtm9ubvfe4phnfa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

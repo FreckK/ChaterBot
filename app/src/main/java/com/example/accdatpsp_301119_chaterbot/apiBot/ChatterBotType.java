@@ -1,6 +1,4 @@
-package com.example.accdatpsp_301119_chaterbot.api;
-
-import java.util.Locale;
+package com.example.accdatpsp_301119_chaterbot.apiBot;
 
 /*
     chatter-bot-api
@@ -19,7 +17,8 @@ import java.util.Locale;
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-public interface ChatterBot {
-    
-    ChatterBotSession createSession(Locale... locales);
+public enum ChatterBotType {
+    CLEVERBOT,
+    JABBERWACKY,
+    PANDORABOTS
 }

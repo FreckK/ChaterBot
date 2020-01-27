@@ -1,4 +1,4 @@
-package com.example.accdatpsp_301119_chaterbot.api;
+package com.example.accdatpsp_301119_chaterbot.apiBot;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -45,6 +45,7 @@ class Pandorabots implements ChatterBot {
 
         public ChatterBotThought think(ChatterBotThought thought) throws Exception {
             vars.put("input", thought.getText());
+
 
             String response = Utils.request("https://www.pandorabots.com/pandora/talk-xml", null, null, vars);
 

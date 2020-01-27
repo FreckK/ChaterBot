@@ -1,4 +1,4 @@
-package com.example.accdatpsp_301119_chaterbot.api;
+package com.example.accdatpsp_301119_chaterbot.apiBot;
 
 /*
     chatter-bot-api
@@ -17,8 +17,23 @@ package com.example.accdatpsp_301119_chaterbot.api;
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-public enum ChatterBotType {
-    CLEVERBOT,
-    JABBERWACKY,
-    PANDORABOTS
+public class ChatterBotThought {
+    private String[] emotions;
+    private String text;
+
+    public String[] getEmotions() {
+        return emotions;
+    }
+
+    public void setEmotions(String[] emotions) {
+        this.emotions = emotions;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }

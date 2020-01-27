@@ -1,25 +1,33 @@
 package com.example.accdatpsp_301119_chaterbot;
+
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.accdatpsp_301119_chaterbot.api.ChatterBot;
-import com.example.accdatpsp_301119_chaterbot.api.ChatterBotFactory;
-import com.example.accdatpsp_301119_chaterbot.api.ChatterBotSession;
-import com.example.accdatpsp_301119_chaterbot.api.ChatterBotType;
-
-
+import com.example.accdatpsp_301119_chaterbot.login.Login;
+import com.example.accdatpsp_301119_chaterbot.settings.SettingsActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -28,191 +36,221 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ChatterBot bot;
-    private ChatterBotFactory factory;
-    private ChatterBotSession botSession;
+        //ViewModel
+    private MainViewModel viewModel;
 
-    TTS tts;
-    ImageView ivTalk;
-    String auxiliar;
+        //Toolbar
+    private Toolbar toolbar;
+    private MenuItem mnSettings;
 
-    ArrayList<String> result = null;
+        //RecyclerView
+    private RecyclerView rvChat;
+    private ChatAdapter adapter;
+    private RecyclerView.LayoutManager lManager;
 
+        //Commons
+    private FloatingActionButton btSend;
+    private EditText etMessage;
+
+        //Conversation date
+    private String fecha;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
-        ivTalk = findViewById(R.id.ivTalk);
-        Glide.with(this)
-                .load(R.drawable.mic)
-                .override(500, 500)
-                .into(ivTalk);
-
-        ivTalk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(),"Say Something...",Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-
-                if(intent.resolveActivity(getPackageManager())!=null) {
-                    startActivityForResult(intent, 5);
-                }
-                else {
-                    Toast.makeText(v.getContext(),"Your Device Doesn't Support Speech Intent", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        viewModel =  ViewModelProviders.of(this).get(MainViewModel.class);
+        /**
+         * Si no hay fecha seleccionada con anterioridad vemos la conversacion de hoy
+         *
+        if (savedInstanceState.getString("date") != null){
+            fecha = savedInstanceState.getString("date");
+        }else{
+            LocalDateTime dateTime = LocalDateTime.now();
+            fecha = String.format("%h/%h/%h", dateTime.getYear(), dateTime.getMonth(), dateTime.getDayOfMonth());
+        }
+         */
+        initComponents();
+        initEvents();
     }
 
+    /**
+     * Aqui recibimos por el parametro messages el texto que hemos dicho por voz
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode==5) {
             if(resultCode==RESULT_OK && data!=null) {
-                result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                new Translate().execute("es", result.get(0), "en");
+                    //Nos devuelve un arrayList con las posibles palabras dichas
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
+                    //Traducimos la frase que es mas probable
+                viewModel.translateToEnglish(result.get(0));
+
+                    //Creamos un objeto mensaje
+                LocalDateTime dateTime = LocalDateTime.now();
+                String fecha = String.format("%h/%h/%h", dateTime.getYear(), dateTime.getMonth(), dateTime.getDayOfMonth());
+                String hora = String.format("%h:%h", dateTime.getHour(), dateTime.getMinute());
+                Message message = new Message(etMessage.getText().toString().trim(), fecha, hora, false);
+
+                    //Añadimos el mensaje a la lista de mensajes
+                viewModel.addMessage(message);
+
+                    //Lo añadimos al adaptador, refrescamos el recycler y limpiamos el cuadro de texto
+                adapter.setData(viewModel.getMessages());
+                adapter.notifyDataSetChanged();
+                etMessage.setText("");
             }
         }
     }
 
-    private void init() {
-        tts = new TTS(getApplicationContext());
-        if(startBot()) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
 
+        mnSettings = menu.findItem(R.id.mnsettings);
+
+        mnSettings.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                return false;
+            }
+        });
+
+
+        MenuItem mnDate = menu.findItem(R.id.mndate);
+        mnDate.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showDatePicker();
+                return false;
+            }
+        });
+
+        MenuItem mnLogOut = menu.findItem(R.id.mnLogOut);
+        mnLogOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent logOutIntent = new Intent(MainActivity.this, Login.class);
+                logOutIntent.putExtra("logout", true);
+                startActivity(logOutIntent);
+                return false;
+            }
+        });
+
+        return true;
+    }
+
+    private void initComponents(){
+        //Toolbar
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("ChaterBot");
         }
+        toolbar.inflateMenu(R.menu.menu);
+
+        //RecyclerView
+        rvChat = findViewById(R.id.rvChat);
+        lManager = new LinearLayoutManager(this);
+        rvChat.setLayoutManager(lManager);
+        adapter = ChatAdapter.getInstance(getApplicationContext());
+        rvChat.setAdapter(adapter);
+
+        //Commons
+        btSend = findViewById(R.id.btSend);
+        etMessage = findViewById(R.id.etMessage);
+
+
     }
 
-    private String chat(final String text) {
-        String response;
-        try {
-            response = botSession.think(text);
-        } catch (final Exception e) {
-            response = "";
-        }
+    private void initEvents(){
+        etMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-        Log.v("coco", response);
-        //traducir("en", response, "es");
-        return response;
-    }
+            }
 
-    private boolean startBot() {
-        boolean result = true;
-        String initialMessage;
-        factory = new ChatterBotFactory();
-        try {
-            bot = factory.create(ChatterBotType.PANDORABOTS, "b0dafd24ee35a477");
-            botSession = bot.createSession();
-            //initialMessage = "conectado" + "\n";
-        } catch(Exception e) {
-            //initialMessage = "ERROR" + "\n" + " " + e.toString();
-            result = false;
-        }
-        return result;
-    }
-
-    public void traducir2(String... params){
-        new Translate2().execute(params);
-    }
-
-    class Translate extends AsyncTask<String, String, Void>{
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            RestClient r = new RestClient();
-
-            HashMap<String, String> httpBodyParams;
-            httpBodyParams = new HashMap<>();
-            httpBodyParams.put("fromLang", strings[0]);
-            httpBodyParams.put("text", strings[1]);
-            httpBodyParams.put("to", strings[2]);
-
-
-            StringBuilder result = new StringBuilder();
-            boolean first = true;
-            for(Map.Entry<String, String> entry : httpBodyParams.entrySet()){
-                if (first)
-                    first = false;
-                else
-                    result.append("&");
-                try {
-                    result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() == 0){
+                    btSend.setImageResource(R.drawable.mic);
+                }else{
+                    btSend.setImageResource(R.drawable.send);
                 }
-                result.append("=");
-                try {
-                    result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 0){
+                    btSend.setImageResource(R.drawable.mic);
                 }
             }
-            String parameters = result.toString();
+        });
 
+        btSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /**
+                 * Si no hay nada en el campo de texto el boton actua como micro
+                 * Y si hay algo actua como enviar
+                 */
 
+                if (etMessage.getText().toString().length() != 0){
+                    //Enviar
+                        //Traducimos el mensaje al ingles
+                    viewModel.translateToEnglish(etMessage.getText().toString().trim());
 
-            String e = r.postHttp("https://www.bing.com/ttranslatev3?isVertical=1&&IG=9AB86C10F77B448D932E5D5DB4E982F1&IID=translator.5026.3", parameters);
-            Log.v("holiii", "Respuesta: " + parameters);
-            String sub = e.substring(e.indexOf("\"text\":\""), e.indexOf("\"to\":\""));
-            auxiliar = sub.substring(8).replace("\"", "").replace(",", "");
+                        //Creamos un objeto mensaje
+                    LocalDateTime dateTime = LocalDateTime.now();
+                    String fecha = String.format("%h/%h/%h", dateTime.getYear(), dateTime.getMonth(), dateTime.getDayOfMonth());
+                    String hora = String.format("%h:%h", dateTime.getHour(), dateTime.getMinute());
+                    Message message = new Message(etMessage.getText().toString().trim(), fecha, hora, false);
+                    Firebase.save();
+                        //Añadimos el mensaje a la lista de mensajes
+                    viewModel.addMessage(message);
 
-
-            traducir2("en", chat(auxiliar), "es");
-
-            return null;
-        }
-
-    }
-
-    class Translate2 extends AsyncTask<String, String, Void>{
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            RestClient r = new RestClient();
-
-            HashMap<String, String> httpBodyParams;
-            httpBodyParams = new HashMap<>();
-            httpBodyParams.put("fromLang", strings[0]);
-            httpBodyParams.put("text", strings[1]);
-            httpBodyParams.put("to", strings[2]);
-
-
-            StringBuilder result = new StringBuilder();
-            boolean first = true;
-            for(Map.Entry<String, String> entry : httpBodyParams.entrySet()){
-                if (first)
-                    first = false;
-                else
-                    result.append("&");
-                try {
-                    result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                result.append("=");
-                try {
-                    result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                        //Lo añadimos al adaptador, refrescamos el recycler y limpiamos el cuadro de texto
+                    adapter.setData(viewModel.getMessages());
+                    adapter.notifyDataSetChanged();
+                    etMessage.setText("");
+                }else{
+                    //Microfono
+                        //Hacemos un intent que nos muestra el microfono para hablar
+                        //(el resultado lo recogemos en onActivityResult())
+                    Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                    if(intent.resolveActivity(getPackageManager())!=null) {
+                        startActivityForResult(intent, 5);
+                    }
+                    else {
+                        Toast.makeText(v.getContext(),"Your Device Doesn't Support Speech Intent", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
-            String parameters = result.toString();
-
-
-            String e = r.postHttp("https://www.bing.com/ttranslatev3?isVertical=1&&IG=9AB86C10F77B448D932E5D5DB4E982F1&IID=translator.5026.3", parameters);
-            String sub = e.substring(e.indexOf("\"text\":\""), e.indexOf("\"to\":\""));
-            auxiliar = sub.substring(8).replace("\"", "").replace(",", "");
-            tts.sayHello(auxiliar);
-
-            return null;
-        }
-
+        });
     }
 
+    private void showDatePicker(){
+        DatePickerFragment newFragment = DatePickerFragment.newInstance(new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                    // +1 because January is zero
+                final String selectedDate = year + "-" + (month+1) + "-" + day;
+                //PEDIR A FIREBASE QUE ME DE LOS MENSAJES QUE CONTENGAN ESA FECHA
+                Toast.makeText(MainActivity.this, selectedDate, Toast.LENGTH_SHORT).show();
+            }
+        });
+        newFragment.show(getSupportFragmentManager(), "datePicker");
+    }
 
 }
