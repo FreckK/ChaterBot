@@ -78,10 +78,6 @@ public class Firebase {
 
                 for (Map.Entry<String, Map<String, Message>> entry : map.entrySet()) {
                     for (Map.Entry<String, Message> entry2 : entry.getValue()){
-
-
-
-                        mensajes.add(entry2.getValue());
                     }
                 }
             }
