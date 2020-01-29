@@ -66,7 +66,7 @@ public class ChatAdapter extends RecyclerView.Adapter <ChatAdapter.MyViewHolder>
 
     public void setData(List<Message> messages){
         this.messages = messages;
-
+        notifyDataSetChanged();
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {

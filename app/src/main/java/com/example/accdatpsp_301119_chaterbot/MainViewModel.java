@@ -18,13 +18,13 @@ import java.util.List;
 public class MainViewModel extends AndroidViewModel  implements CallbackInterface{
 
     private Repository repository;
-    private DatabaseReference reff;
-    private ArrayList<String> result = null;
     private static List<Message> messages = new ArrayList<>();
+    private Firebase firebase;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         repository = new Repository(getApplication().getApplicationContext(), this);
+        firebase = new Firebase(this);
     }
 
 
@@ -59,4 +59,17 @@ public class MainViewModel extends AndroidViewModel  implements CallbackInterfac
         Firebase.saveMessage(message);
         this.messages().add(message);
     }
+
+    @Override
+    public void setMessages(ArrayList<Message> messages) {
+        this.messages = messages;
+        ChatAdapter adapter = ChatAdapter.getInstance();
+        adapter.setData(messages);
+    }
+
+    public void getMessagesFrom(String date){
+        firebase.getMesssages(date);
+    }
+
+
 }

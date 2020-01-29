@@ -25,11 +25,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
 public class Firebase {
 
     static DatabaseReference reff;
+
+    public CallbackInterface callbackInterface;
+
+    public Firebase(CallbackInterface callbackInterface){
+        this.callbackInterface = callbackInterface;
+
+    }
 
     /**
      * Con este metodo creamos usuarios
@@ -66,7 +71,7 @@ public class Firebase {
     }
 
 
-    public static void save(String fecha){
+    public void getMesssages(String fecha){
         reff = FirebaseDatabase.getInstance().getReference().child("messages").child(fecha);
         final ArrayList<Message> mensajes = new ArrayList<>();
         reff.addValueEventListener(new ValueEventListener() {
@@ -74,12 +79,19 @@ public class Firebase {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                Map<String, Map<String, Message>> map = (Map<String, Map<String, Message>>) dataSnapshot.getValue();
+                Map<String, Message> map = (Map<String, Message>) dataSnapshot.getValue();
 
-                for (Map.Entry<String, Map<String, Message>> entry : map.entrySet()) {
-                    for (Map.Entry<String, Message> entry2 : entry.getValue()){
-                    }
+                Log.d("message", "MAP TOSTRING: " + map.toString());
+                for (Map.Entry<String, Message> entry : map.entrySet()) {
+                    Log.d("message", "MENSAJE: " + entry.getValue().toString());
                 }
+
+                ArrayList<Message> messages = new ArrayList<>();
+                Log.d("message", "keySet AFUERA: " + map.values().toString());
+                for (Message message : map.values()){
+                    messages.add(message);
+                }
+                callbackInterface.setMessages(messages);
             }
 
             @Override

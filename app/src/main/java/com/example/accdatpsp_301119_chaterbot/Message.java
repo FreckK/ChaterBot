@@ -1,9 +1,6 @@
 package com.example.accdatpsp_301119_chaterbot;
 
-import android.util.Log;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,13 +9,13 @@ public class Message {
     private String mensaje;
     private String fecha;
     private String hora;
-    private boolean isBot;
+    private boolean bot;
 
-    public Message(String mensaje, String fecha, String hora, boolean isBot) {
+    public Message(String mensaje, String fecha, String hora, boolean bot) {
         this.mensaje = mensaje;
         this.fecha = fecha;
         this.hora = hora;
-        this.isBot = isBot;
+        this.bot = bot;
     }
 
     public Message() {
@@ -50,11 +47,11 @@ public class Message {
     }
 
     public boolean isBot() {
-        return isBot;
+        return bot;
     }
 
     public void setBot(boolean bot) {
-        isBot = bot;
+        this.bot = bot;
     }
 
     @Override
@@ -63,7 +60,7 @@ public class Message {
                 "mensaje='" + mensaje + '\'' +
                 ", fecha='" + fecha + '\'' +
                 ", hora='" + hora + '\'' +
-                ", isBot=" + isBot +
+                ", bot=" + bot +
                 '}';
     }
 
@@ -72,7 +69,7 @@ public class Message {
         result.put("message", mensaje);
         result.put("fecha", fecha);
         result.put("hora", hora);
-        result.put("isBot", isBot);
+        result.put("bot", bot);
         return result;
     }
 
@@ -84,8 +81,5 @@ public class Message {
             //Log.d("message", "MEssage: " + message.toString());
         }
         return messages;
-    }
-    public static Message toMessage(Object o){
-
     }
 }

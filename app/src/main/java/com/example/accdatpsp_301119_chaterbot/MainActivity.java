@@ -2,12 +2,10 @@ package com.example.accdatpsp_301119_chaterbot;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,14 +21,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.accdatpsp_301119_chaterbot.login.Login;
 import com.example.accdatpsp_301119_chaterbot.settings.SettingsActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 //https://github.com/pierredavidbelanger/chatter-bot-api
 
@@ -214,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                     String fecha = String.format("%h/%h/%h", dateTime.getYear(), dateTime.getMonth(), dateTime.getDayOfMonth());
                     String hora = String.format("%h:%h", dateTime.getHour(), dateTime.getMinute());
                     Message message = new Message(etMessage.getText().toString().trim(), fecha, hora, false);
-                    Firebase.save();
+                    //Firebase.getMesssages(fecha);
                         //Añadimos el mensaje a la lista de mensajes
                     viewModel.addMessage(message);
 
@@ -247,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
                     // +1 because January is zero
                 final String selectedDate = year + "-" + (month+1) + "-" + day;
                 //PEDIR A FIREBASE QUE ME DE LOS MENSAJES QUE CONTENGAN ESA FECHA
+                viewModel.getMessagesFrom(selectedDate);
                 Toast.makeText(MainActivity.this, selectedDate, Toast.LENGTH_SHORT).show();
             }
         });
