@@ -13,6 +13,7 @@ import com.example.accdatpsp_301119_chaterbot.apiBot.ChatterBotType;
 import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainViewModel extends AndroidViewModel  implements CallbackInterface{
@@ -61,10 +62,25 @@ public class MainViewModel extends AndroidViewModel  implements CallbackInterfac
     }
 
     @Override
-    public void setMessages(ArrayList<Message> messages) {
+    public void setMessages(ArrayList<HashMap<String, Object>> messages) {
+        /*
         this.messages = messages;
         ChatAdapter adapter = ChatAdapter.getInstance();
-        adapter.setData(messages);
+        adapter.setData(messages);*/
+        ArrayList<Message> messageArrayList = new ArrayList<>();
+        if(messages != null){
+            for (int i = 0; i < messages.size(); i++){
+                Message msg = new Message();
+                msg.setBot(Boolean.valueOf(messages.get(i).get("bot").toString()));
+                msg.setFecha(messages.get(i).get("fecha").toString());
+                msg.setHora(messages.get(i).get("hora").toString());
+                msg.setMensaje(messages.get(i).get("mensaje").toString());
+                messageArrayList.add(msg);
+            }
+        }
+
+        ChatAdapter adapter = ChatAdapter.getInstance();
+        adapter.setData(messageArrayList);
     }
 
     public void getMessagesFrom(String date){

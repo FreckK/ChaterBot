@@ -23,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Firebase {
@@ -74,11 +75,20 @@ public class Firebase {
     public void getMesssages(String fecha){
         reff = FirebaseDatabase.getInstance().getReference().child("messages").child(fecha);
         final ArrayList<Message> mensajes = new ArrayList<>();
+        final ArrayList<HashMap<String, Object>> myMsgs = new ArrayList<>();
         reff.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterator<DataSnapshot> items = dataSnapshot.getChildren().iterator();
+                while (items.hasNext()){
+                    HashMap<String, Object> auxMap;
+                    DataSnapshot item = items.next();
+                    auxMap = (HashMap<String, Object>) item.getValue();
+                    myMsgs.add(auxMap);
+                }
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
+                /*ArrayList<HashMap<String, Object>> myMsgs = new ArrayList<>();
                 Map<String, Message> map = (Map<String, Message>) dataSnapshot.getValue();
 
                 Log.d("message", "MAP TOSTRING: " + map.toString());
@@ -90,8 +100,8 @@ public class Firebase {
                 Log.d("message", "keySet AFUERA: " + map.values().toString());
                 for (Message message : map.values()){
                     messages.add(message);
-                }
-                callbackInterface.setMessages(messages);
+                }*/
+                callbackInterface.setMessages(myMsgs);
             }
 
             @Override
