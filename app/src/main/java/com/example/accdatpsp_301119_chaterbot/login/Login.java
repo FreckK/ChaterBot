@@ -114,8 +114,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         String email = etMail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
+        Toast.makeText(this, String.format("EMAIL: %s PASSWORD: %s", email, password), Toast.LENGTH_SHORT).show();
 
-        if (cbPersist.isSelected()){
+        if (cbPersist.isSelected() && viewModel.doLogin(email, password)){
             saveCredential(EMAIL, email);
             saveCredential(PASSWD, password);
             makePersistent();

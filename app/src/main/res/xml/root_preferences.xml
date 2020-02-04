@@ -20,6 +20,7 @@
     <PreferenceCategory app:title="Autosave Settings">
 
         <SwitchPreferenceCompat
+            android:id="@+id/saveSwitch"
             app:key="sync"
             app:title="Save" />
 

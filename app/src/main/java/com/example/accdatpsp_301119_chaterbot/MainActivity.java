@@ -1,6 +1,7 @@
 package com.example.accdatpsp_301119_chaterbot;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.preference.Preference;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -66,6 +68,21 @@ public class MainActivity extends AppCompatActivity {
          */
         initComponents();
         initEvents();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //Read
+        this.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getString(key, null);
+        //Save
+        this.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .edit().putString(key, value).apply();
+    }
+
+    public void readSettings(){
+
     }
 
     /**
@@ -248,4 +265,9 @@ public class MainActivity extends AppCompatActivity {
         newFragment.show(getSupportFragmentManager(), "datePicker");
     }
 
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        Log.e("preference", "Pending Preference value is: " + newValue);
+        return true;
+    }
 }
